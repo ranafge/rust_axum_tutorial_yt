@@ -33,10 +33,10 @@ async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
     //{:<20} this is string fromater fomat string shift 20 character left  "HANDLER" will place in place holder
     println!("->> {:<20} - handler_hello - {params:?}", "HANDLER");
     let name = params.name.as_deref().unwrap_or("World!");
-    let age = params.age.unwrap().abs();
+    let age = params.age.unwrap_or(2);
     use pluralizer::pluralize;
-    
-    Html(format!("Hello <strong>{}!</strong>. Your age is:<strong> {} </strong> ", first_character_uppercase(name), pluralize("year", age as isize, true)))
+    let age = pluralize("years", age as isize, true);
+    Html(format!("Hello <strong>{}!</strong>. Your age is:<strong> {} </strong> ", first_character_uppercase(name), age))
 }
 
 // e.g `hello2/Rana` extract the variable from the url path
@@ -50,8 +50,8 @@ async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
 
 // function that convet first character upercase of handler_hello2 function name parameter
 // USE IN `handler_hello2` FUNCTION
-fn first_character_uppercase(s: &str) -> String {
-    let mut first = s.chars(); // convert str into char iterator.
+fn first_character_uppercase(s: &str) -> String { // rana
+    let mut first = s.chars(); // convert str into char iterator. char<['r', 'a', 'n', 'a']>
 
     let result = match first.next() {
         None => String::new(), // "" string will be return for match None
