@@ -50,7 +50,8 @@
 
 // // function that convet first character upercase of handler_hello2 function name parameter
 // // USE IN `handler_hello2` FUNCTION
-fn first_character_uppercase(s: &str) -> String { // rana
+fn first_character_uppercase(s: &str) -> String {
+    // rana
     let mut first = s.chars(); // convert str into char iterator. char<['r', 'a', 'n', 'a']>
 
     let result = match first.next() {
@@ -76,7 +77,12 @@ fn first_character_uppercase(s: &str) -> String { // rana
 // ////////////////////////////////////////////////////////////////////////////
 // /// Second part after 10 min
 // /// //////////////////////////////////////////////////////////////////////////
-use serde::{Deserialize, Serialize};
+
+pub use self::error::{Error, Result};
+mod error;
+mod web;
+
+use serde::Deserialize;
 use tokio::net::TcpListener;
 #[derive(Debug, Deserialize)]
 struct HelloParams {
@@ -87,12 +93,18 @@ struct HelloParams {
 async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
     println!("->> {:<12} -handler_hello", "HANDLER");
     let name = params.name.as_deref().unwrap_or("world!");
-    Html(format!("Hello <strong>{}!</strong>", first_character_uppercase(&name)))
+    Html(format!(
+        "Hello <strong>{}!</strong>",
+        first_character_uppercase(&name)
+    ))
 }
 // url path: /name
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
     println!("->> {:<12} -handler_hello", "HANDLER");
-    Html(format!("Hello <strong>{}</strong>", first_character_uppercase(&name)))
+    Html(format!(
+        "Hello <strong>{}</strong>",
+        first_character_uppercase(&name)
+    ))
 }
 fn routes_hello() -> Router {
     Router::new()
@@ -102,7 +114,7 @@ fn routes_hello() -> Router {
 use axum::{
     extract::{Path, Query},
     response::{Html, IntoResponse},
-    routing::{get_service, get},
+    routing::{get, get_service},
     Router,
 };
 use tower_http::services::ServeDir;
@@ -111,9 +123,10 @@ use tower_http::services::ServeDir;
 async fn main() {
     let routes_hello = Router::new()
         .merge(routes_hello())
+        .merge(web::routes())
         .fallback_service(route_static());
 
-        // Tcplistener bind with localserver await and unwarp because of futre
+    // Tcplistener bind with localserver await and unwarp because of futre
     let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
     println!("Listing from : {}", listener.local_addr().unwrap());
     // axum::serve (listner, app that handle request like get post so on)
