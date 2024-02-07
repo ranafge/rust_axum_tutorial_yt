@@ -1,55 +1,55 @@
-#![allow(unused)]
+// #![allow(unused)]
 
-use axum::extract::{Path, Query};
-use axum::{
-    response::{Html, IntoResponse},
-    routing::get,
-    Router,
-};
-use serde::Deserialize;
-use tokio::net::TcpListener;
+// use axum::extract::{Path, Query};
+// use axum::{
+//     response::{Html, IntoResponse},
+//     routing::get,
+//     Router,
+// };
+// use serde::Deserialize;
+// use tokio::net::TcpListener;
 
-#[tokio::main]
-async fn main() {
-    let routes_hello = Router::new()
-        .route("/hello", get(handler_hello))
-        .route("/hello2/:name", get(handler_hello2));
-    // Tcplistener bind with localserver await and unwarp because of futre
-    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
-    println!("Listing from : {}", listener.local_addr().unwrap());
-    // axum::serve (listner, app that handle request like get post so on)
-    axum::serve(listener, routes_hello).await.unwrap();
-}
+// #[tokio::main]
+// async fn main() {
+//     let routes_hello = Router::new()
+//         .route("/hello", get(handler_hello))
+//         .route("/hello2/:name", get(handler_hello2));
+//     // Tcplistener bind with localserver await and unwarp because of futre
+//     let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+//     println!("Listing from : {}", listener.local_addr().unwrap());
+//     // axum::serve (listner, app that handle request like get post so on)
+//     axum::serve(listener, routes_hello).await.unwrap();
+// }
 
-#[derive(Debug, Deserialize)]
-struct HelloParams {
-    name: Option<String>,
-    age: Option<i32>
-}
+// #[derive(Debug, Deserialize)]
+// struct HelloParams {
+//     name: Option<String>,
+//     age: Option<i32>
+// }
 
-// e.g `/hello?name=Rana`. This is the Query that extrac the query parameter from the url .
-// Query is tuple (T) T is generic that impl deserialize
-async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
-    //{:<20} this is string fromater fomat string shift 20 character left  "HANDLER" will place in place holder
-    println!("->> {:<20} - handler_hello - {params:?}", "HANDLER");
-    let name = params.name.as_deref().unwrap_or("World!");
-    let age = params.age.unwrap_or(2);
-    use pluralizer::pluralize;
-    let age = pluralize("years", age as isize, true);
-    Html(format!("Hello <strong>{}!</strong>. Your age is:<strong> {} </strong> ", first_character_uppercase(name), age))
-}
+// // e.g `/hello?name=Rana`. This is the Query that extrac the query parameter from the url .
+// // Query is tuple (T) T is generic that impl deserialize
+// async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
+//     //{:<20} this is string fromater fomat string shift 20 character left  "HANDLER" will place in place holder
+//     println!("->> {:<20} - handler_hello - {params:?}", "HANDLER");
+//     let name = params.name.as_deref().unwrap_or("World!");
+//     let age = params.age.unwrap_or(2);
+//     use pluralizer::pluralize;
+//     let age = pluralize("years", age as isize, true);
+//     Html(format!("Hello <strong>{}!</strong>. Your age is:<strong> {} </strong> ", first_character_uppercase(name), age))
+// }
 
-// e.g `hello2/Rana` extract the variable from the url path
-async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<20} - handler_hello - {name:?}", "HANDLER");
-    Html(format!(
-        "Hello <strong>{}</strong>",
-        first_character_uppercase(name.as_str())
-    ))
-}
+// // e.g `hello2/Rana` extract the variable from the url path
+// async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
+//     println!("->> {:<20} - handler_hello - {name:?}", "HANDLER");
+//     Html(format!(
+//         "Hello <strong>{}</strong>",
+//         first_character_uppercase(name.as_str())
+//     ))
+// }
 
-// function that convet first character upercase of handler_hello2 function name parameter
-// USE IN `handler_hello2` FUNCTION
+// // function that convet first character upercase of handler_hello2 function name parameter
+// // USE IN `handler_hello2` FUNCTION
 fn first_character_uppercase(s: &str) -> String { // rana
     let mut first = s.chars(); // convert str into char iterator. char<['r', 'a', 'n', 'a']>
 
@@ -71,4 +71,55 @@ fn first_character_uppercase(s: &str) -> String { // rana
        assert_eq(first.as_str(), "")
 
     */
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+// /// Second part after 10 min
+// /// //////////////////////////////////////////////////////////////////////////
+use serde::{Deserialize, Serialize};
+use tokio::net::TcpListener;
+#[derive(Debug, Deserialize)]
+struct HelloParams {
+    name: Option<String>,
+}
+
+// url path query : ?name=name
+async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
+    println!("->> {:<12} -handler_hello", "HANDLER");
+    let name = params.name.as_deref().unwrap_or("world!");
+    Html(format!("Hello <strong>{}!</strong>", first_character_uppercase(&name)))
+}
+// url path: /name
+async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
+    println!("->> {:<12} -handler_hello", "HANDLER");
+    Html(format!("Hello <strong>{}</strong>", first_character_uppercase(&name)))
+}
+fn routes_hello() -> Router {
+    Router::new()
+        .route("/hello", get(handler_hello))
+        .route("/hello2/:name", get(handler_hello2))
+}
+use axum::{
+    extract::{Path, Query},
+    response::{Html, IntoResponse},
+    routing::{get_service, get},
+    Router,
+};
+use tower_http::services::ServeDir;
+
+#[tokio::main]
+async fn main() {
+    let routes_hello = Router::new()
+        .merge(routes_hello())
+        .fallback_service(route_static());
+
+        // Tcplistener bind with localserver await and unwarp because of futre
+    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+    println!("Listing from : {}", listener.local_addr().unwrap());
+    // axum::serve (listner, app that handle request like get post so on)
+    axum::serve(listener, routes_hello).await.unwrap();
+}
+
+fn route_static() -> Router {
+    Router::new().nest_service("/", get_service(ServeDir::new("./")))
 }
