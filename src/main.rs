@@ -77,13 +77,19 @@ fn first_character_uppercase(s: &str) -> String {
 // ////////////////////////////////////////////////////////////////////////////
 // /// Second part after 10 min
 // /// //////////////////////////////////////////////////////////////////////////
-
+// pub mod web;
 pub use self::error::{Error, Result};
 mod error;
-mod web;
+mod web {
+    pub mod routes_login;
+}
+
 
 use serde::Deserialize;
 use tokio::net::TcpListener;
+use tower_http::services::ServeDir;
+
+
 #[derive(Debug, Deserialize)]
 struct HelloParams {
     name: Option<String>,
@@ -117,13 +123,12 @@ use axum::{
     routing::{get, get_service},
     Router,
 };
-use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
     let routes_hello = Router::new()
         .merge(routes_hello())
-        .merge(web::routes())
+        .merge(web::routes_login::routes())
         .fallback_service(route_static());
 
     // Tcplistener bind with localserver await and unwarp because of futre
