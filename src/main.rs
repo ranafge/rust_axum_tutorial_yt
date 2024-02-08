@@ -138,6 +138,7 @@ async fn main() {
     axum::serve(listener, routes_hello).await.unwrap();
 }
 
+// static resource or file services
 fn route_static() -> Router {
     Router::new().nest_service("/", get_service(ServeDir::new("./")))
 }

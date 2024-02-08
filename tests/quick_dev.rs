@@ -8,10 +8,10 @@ async fn quick_dev() ->Result<()> {
     // hc is use to perform different type http request like post, put, get delete etc.
     hc.do_get("/hello?name=Rana").await?.print().await?;
     hc.do_get("/hello2/rana").await?.print().await?;
-    hc.do_get("/src/main.rs").await?.print().await?;
+    // hc.do_get("/src/main.rs").await?.print().await?;
     hc.do_post("/api/login", json!({
-        "username": "demo1x",
-        "pwd": "welcomex"
+        "username": "demo1",
+        "pwd": "welcome"
     })).await?.print().await?;
 
     Ok(())
