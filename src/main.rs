@@ -80,13 +80,15 @@ fn first_character_uppercase(s: &str) -> String {
 // pub mod web;
 pub use self::error::{Error, Result};
 mod error;
-mod web {
-    pub mod routes_login;
-}
+mod web;
+// mod web {
+//     pub mod routes_login;
+// }
 
 
 use serde::Deserialize;
 use tokio::net::TcpListener;
+use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
 
@@ -127,7 +129,7 @@ async fn main() {
         .merge(routes_hello())
         .merge(web::routes_login::routes())
         .layer(middleware::map_response(main_resonse_mapper))
-
+        .layer(CookieManagerLayer::new())
         .fallback_service(route_static());
 
     // Tcplistener bind with localserver await and unwarp because of futre
