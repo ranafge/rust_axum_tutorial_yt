@@ -9,6 +9,7 @@ pub fn routes() -> Router {
 }
 
 async fn api_login(payload: Json<LoginPayload>) -> Result<Json<Value>> {
+    println!("{:<12} {} ", "HANDLER" ,"-api_login");
     // TODO: Implement real db/auth logic.
     if payload.username != "demo1" || payload.pwd != "welcome" {
         return Err(Error::LoginFail);

@@ -106,7 +106,7 @@ async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
 }
 // url path: /name
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<12} -handler_hello", "HANDLER");
+    println!("->> {:<12} -handler_hello2", "HANDLER");
     Html(format!(
         "Hello <strong>{}</strong>",
         first_character_uppercase(&name)
@@ -118,10 +118,7 @@ fn routes_hello() -> Router {
         .route("/hello2/:name", get(handler_hello2))
 }
 use axum::{
-    extract::{Path, Query},
-    response::{Html, IntoResponse},
-    routing::{get, get_service},
-    Router,
+    extract::{Path, Query}, middleware, response::{Html, IntoResponse, Response}, routing::{get, get_service}, Router
 };
 
 #[tokio::main]
@@ -129,6 +126,8 @@ async fn main() {
     let routes_hello = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        .layer(middleware::map_response(main_resonse_mapper))
+
         .fallback_service(route_static());
 
     // Tcplistener bind with localserver await and unwarp because of futre
@@ -137,6 +136,15 @@ async fn main() {
     // axum::serve (listner, app that handle request like get post so on)
     axum::serve(listener, routes_hello).await.unwrap();
 }
+
+// special layer
+// its work for every request
+async fn main_resonse_mapper(res: Response) -> Response {
+    println!("{:<12}main_response_mapper", "RES_MAPPER" );
+    println!();
+    res
+}
+
 
 // static resource or file services
 fn route_static() -> Router {
