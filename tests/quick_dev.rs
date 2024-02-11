@@ -14,6 +14,7 @@ async fn quick_dev() ->Result<()> {
         "username": "demo1",
         "pwd": "welcome"
     })).await?.print().await?;
+    hc.do_get("/hello?name=Rana").await?.print().await?;
 
     Ok(())
 }

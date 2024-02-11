@@ -80,10 +80,8 @@ fn first_character_uppercase(s: &str) -> String {
 // pub mod web;
 pub use self::error::{Error, Result};
 mod error;
+mod model;
 mod web;
-// mod web {
-//     pub mod routes_login;
-// }
 
 
 use serde::Deserialize;
