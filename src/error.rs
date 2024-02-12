@@ -7,7 +7,8 @@ pub type Result<T>  = core::result::Result<T, Error>;
 // create error enum 
 #[derive(Debug)]
 pub enum Error {
-    LoginFail
+    LoginFail,
+    TicketDeleteFailIdNotFound
 }
 
 // implement the IntoResponse for Error return an axum response
