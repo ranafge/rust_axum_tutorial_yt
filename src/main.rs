@@ -127,10 +127,10 @@ async fn main() -> Result<()> {
 
     let mc = ModelController::new().await?;
 
-    let routes_hello = Router::new()
-        .merge(routes_hello())
+    let routes_hello = Router::new() // Starting with blank map of the city
+        .merge(routes_hello()) // adding roads and intersections from another part of city to our map. merse route from nother source
         .merge(web::routes_login::routes())
-        .nest("/api", web::routes_tickets::routes(mc.clone()))
+        .nest("/api", web::routes_tickets::routes(mc.clone())) // say api is a new district of our city the district name is api 
         .layer(middleware::map_response(main_resonse_mapper))
         .layer(CookieManagerLayer::new())
         .fallback_service(route_static());
@@ -153,7 +153,8 @@ async fn main_resonse_mapper(res: Response) -> Response {
 }
 
 
-// static resource or file services
+// static resource or file services like images, css, javascript files service provide by this section 
+// so that visitor that can explore
 fn route_static() -> Router {
     Router::new().nest_service("/", get_service(ServeDir::new("./")))
 }
