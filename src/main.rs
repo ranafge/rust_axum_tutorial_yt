@@ -120,12 +120,17 @@ fn routes_hello() -> Router {
 use axum::{
     extract::{Path, Query}, middleware, response::{Html, IntoResponse, Response}, routing::{get, get_service}, Router
 };
-
+use crate::model::ModelController;
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    // Initialze ModelController
+
+    let mc = ModelController::new().await?;
+
     let routes_hello = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        .nest("/api", web::routes_tickets::routes(mc.clone()))
         .layer(middleware::map_response(main_resonse_mapper))
         .layer(CookieManagerLayer::new())
         .fallback_service(route_static());
@@ -135,6 +140,8 @@ async fn main() {
     println!("Listing from : {}", listener.local_addr().unwrap());
     // axum::serve (listner, app that handle request like get post so on)
     axum::serve(listener, routes_hello).await.unwrap();
+
+    Ok(())
 }
 
 // special layer

@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde_json::json;
 
 #[tokio::test]
-async fn quick_dev() ->Result<()> {
+async fn quick_dev() -> Result<()> {
     // hc is HTTP CLIENT instance to interact with localhost server
     let hc = httpc_test::new_client("http://localhost:8080")?;
     hc.do_get("/src/main.rs").await?.print().await?;
@@ -10,11 +10,25 @@ async fn quick_dev() ->Result<()> {
     hc.do_get("/hello?name=Rana").await?.print().await?;
     hc.do_get("/hello2/rana").await?.print().await?;
     // hc.do_get("/src/main.rs").await?.print().await?;
-    hc.do_post("/api/login", json!({
-        "username": "demo1",
-        "pwd": "welcome"
-    })).await?.print().await?;
+    hc.do_post(
+        "/api/login",
+        json!({
+            "username": "demo1",
+            "pwd": "welcome"
+        }),
+    )
+    .await?
+    .print()
+    .await?;
     hc.do_get("/hello?name=Rana").await?.print().await?;
+    let req_create_ticket = hc.do_post(
+        "/api/tickets",
+        json!(
+            {"ticket": "Ticket AAA"}
+        ),
+    );
+    req_create_ticket.await?.print().await?;
+    hc.do_get("/api/tickets").await?.print().await?;
 
     Ok(())
 }
