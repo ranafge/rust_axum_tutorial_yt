@@ -82,7 +82,7 @@ pub use self::error::{Error, Result};
 mod error;
 mod model;
 mod web;
-
+mod ctx;
 
 use serde::Deserialize;
 use tokio::net::TcpListener;
@@ -126,6 +126,8 @@ async fn main() -> Result<()> {
     // Initialze ModelController
 
     let mc = ModelController::new().await?;
+    let routes_apis = web::routes_tickets::routes(mc.clone())
+        .route_layer(middleware::from_fn(web::mw_auth::mw_require_auth));
 
     let routes_hello = Router::new() // Starting with blank map of the city
         .merge(routes_hello()) // adding roads and intersections from another part of city to our map. merse route from nother source
